@@ -5,6 +5,7 @@ import routes from './routes';
 
 const app = express();
 app.disable('x-powered-by');
+app.set('view engine', 'html');
 
 app.use(logger('dev', {
   skip: () => app.get('env') === 'test',
@@ -24,11 +25,10 @@ app.use((req, res, next) => {
 
 // Error handler
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-  res
-    .status(err.status || 500)
-    .render('error', {
-      message: err.message,
-    });
+  res.json({
+    message: err.message,
+    error: err,
+  });
 });
 
 export default app;
