@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import path from 'path';
 
 const routes = Router();
 
@@ -6,7 +7,7 @@ const routes = Router();
  * GET home page
  */
 routes.get('/', (req, res) => {
-  res.render('index', { title: 'Express Babel' });
+  res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 /**
