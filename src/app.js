@@ -2,7 +2,10 @@ import express from 'express';
 import logger from 'morgan';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import Promise from 'bluebird';
 import routes from './routes';
+
 
 dotenv.config();
 const app = express();
@@ -14,6 +17,10 @@ app.use(logger('dev', {
 }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// Mongo
+mongoose.Promise = Promise; // override default mongoose's Promise with bluebird's promise
+mongoose.connect(process.env.MONGODB_URL);
 
 // Routes
 app.use('/', routes);
