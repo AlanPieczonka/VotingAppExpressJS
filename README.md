@@ -1,2 +1,2 @@
-# API for FreeCodeCamp's VotingApp project in Express JS 
+# API for FreeCodeCamp's VotingApp project
 ## Work in progress
