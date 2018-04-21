@@ -2,7 +2,7 @@ import { Router } from 'express';
 import path from 'path';
 
 import auth from './routes/auth';
-import users from './routes/users';
+import join from './routes/join';
 
 const routes = Router();
 
@@ -11,6 +11,6 @@ routes.get('/', (req, res) => {
 });
 
 routes.use('/auth', auth);
-routes.use('/users', users);
+routes.use('/join', join);
 
 export default routes;
