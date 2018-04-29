@@ -3,15 +3,15 @@ import logger from 'morgan';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import cors from 'cors';
 import Promise from 'bluebird';
 import routes from './routes';
-
 
 dotenv.config();
 const app = express();
 app.disable('x-powered-by');
 app.set('view engine', 'html');
-
+app.use(cors());
 app.use(logger('dev', {
   skip: () => app.get('env') === 'test',
 }));
