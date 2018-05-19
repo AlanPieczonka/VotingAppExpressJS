@@ -11,7 +11,7 @@ router.post('/', authenticate, (req, res) => {
   console.log(req.body.poll);
   Poll.create({ ...req.body.poll, userId: req.currentUser._id })
     .then(poll => res.json({ poll }))
-    .catch(err => res.status(401).json({ error: err.errmsg }));
+    .catch(error => res.json({ message: 'There has been an error with creating the Poll', error}))
 });
 
 // GET all polls *ANY USER*
@@ -26,10 +26,16 @@ router.get('/:id', async (req, res) => {
   Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
 });
 
-router.put('/:id', authenticate, async (req, res) => {
-  Poll.find({ _id: req.params.id }).then((poll) => {
-    console.log(poll);
-  })
+router.put('/:id', (req, res) => {
+  Poll.findOne({ _id: req.params.id }).then((poll) => {
+    poll.options.push(req.body.newOption);
+    poll.save((err, poll) => {
+      if (err !== null) {
+        return res.json({ message: 'There has been an error with adding new option', err })
+      }
+      res.json({ poll });
+    });
+  });
 });
 
 // PUT increment number of votes on specific option
@@ -64,7 +70,7 @@ router.put('/:id/:option_id/down', (req, res) => {
     res.json({ poll });
   })
     .catch(error => res.json({ message: 'Cannot find this poll' }));
-})
+});
 
 // DELETE poll *ONLY AUTHENTICATED AND AUTHORIZED USER*
 router.delete('/:id', authenticate, async (req, res) => {
