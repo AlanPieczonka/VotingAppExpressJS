@@ -26,7 +26,7 @@ router.get('/:id', async (req, res) => {
   Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', authenticate, (req, res) => {
   Poll.findOne({ _id: req.params.id }).then((poll) => {
     poll.options.push(req.body.newOption);
     poll.save((err, poll) => {
