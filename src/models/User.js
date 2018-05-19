@@ -43,6 +43,7 @@ schema.methods.generateJWT = function generateJWT() {
 schema.methods.toAuthJSON = function toAuthJSON() {
   return {
     email: this.email,
+    id: this._id,
     token: this.generateJWT(),
   };
 };
