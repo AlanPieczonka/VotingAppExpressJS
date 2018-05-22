@@ -22,11 +22,6 @@ schema.methods.isValidPassword = function isValidPassword(password) {
   return bcrypt.compareSync(password, this.passwordHash);
 };
 
-schema.methods.isValidAvatarURL = function isValidAvatarURL(url) {
-  const regexp = /([a-z\-_0-9\/\:\.]*\.(jpg|jpeg|png))/i;
-  return regexp.test(url) || url === '';
-};
-
 schema.methods.setPassword = function setPassword(password) {
   this.passwordHash = bcrypt.hashSync(password, 10);
 };
