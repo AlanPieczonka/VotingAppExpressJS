@@ -21,8 +21,9 @@ schema.methods.isValidPassword = function isValidPassword(password) {
   return bcrypt.compareSync(password, this.passwordHash);
 };
 
+const SALT_ROUNDS = 10;
 schema.methods.setPassword = function setPassword(password) {
-  this.passwordHash = bcrypt.hashSync(password, 10);
+  this.passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
 };
 
 schema.methods.generateJWT = function generateJWT() {
