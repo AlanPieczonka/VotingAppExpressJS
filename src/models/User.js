@@ -15,7 +15,6 @@ const schema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  avatarURL: { type: String },
 });
 
 schema.methods.isValidPassword = function isValidPassword(password) {
