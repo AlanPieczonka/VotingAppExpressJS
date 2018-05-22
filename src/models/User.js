@@ -7,28 +7,23 @@ const schema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    index: true,
     unique: true,
+    index: true,
     lowercase: true,
   },
   passwordHash: {
     type: String,
     required: true,
   },
-  avatarURL: { type: String },
 });
 
 schema.methods.isValidPassword = function isValidPassword(password) {
   return bcrypt.compareSync(password, this.passwordHash);
 };
 
-schema.methods.isValidAvatarURL = function isValidAvatarURL(url) {
-  const regexp = /([a-z\-_0-9\/\:\.]*\.(jpg|jpeg|png))/i;
-  return regexp.test(url) || url === '';
-};
-
+const SALT_ROUNDS = 10;
 schema.methods.setPassword = function setPassword(password) {
-  this.passwordHash = bcrypt.hashSync(password, 10);
+  this.passwordHash = bcrypt.hashSync(password, SALT_ROUNDS);
 };
 
 schema.methods.generateJWT = function generateJWT() {
