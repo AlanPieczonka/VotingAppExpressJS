@@ -3,7 +3,7 @@ import User from '../models/User';
 
 export default (req, res, next) => {
   const header = req.headers.authorization,
-        postmanTesting = false;
+        postmanTesting = true;
   let token;
   if (postmanTesting) {
     token = header;
@@ -16,7 +16,6 @@ export default (req, res, next) => {
       if (err) {
         res.status(401).json({ errors: { global: 'Invalid token' } });
       } else {
-        console.log(token);
         User.findOne({ email: decoded.email }).then((user) => {
           req.currentUser = user;
           next();
