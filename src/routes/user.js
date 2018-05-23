@@ -5,6 +5,7 @@ import parseErrors from '../utils/parseErrors';
 import { validateEmail, validatePassword } from '../utils/validate';
 import Poll from './../models/Poll';
 import authenticate from '../middlewares/authenticate';
+import handleDbError from '../utils/handleDbError';
 
 const router = express.Router();
 
@@ -30,14 +31,19 @@ router.post('/', [
       if (message) {
         return res.status(400).json({ error: { message } });
       }
-      return res.status(503).json({ error: { message: 'There has been an error with saving data to the database' } });
+      return res.status(503).json({ error: { message: 'There has been an error with the database' } });
     });
 });
 
 router.get('/polls', authenticate, (req, res) => {
   Poll.find({ userId: req.currentUser._id })
-    .then(polls => res.json({ polls }))
-    .catch(err => res.json({ error: "You don't have any polls my friend!" }));
+    .then((polls) => {
+      if (polls.length === 0) {
+        return res.status(401).json({ error: { message: "You currently don't have any polls" } });
+      }
+      return res.json({ polls });
+    })
+    .catch(error => handleDbError(error, res));
 });
 
 export default router;
