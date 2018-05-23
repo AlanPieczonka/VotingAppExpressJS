@@ -1,7 +1,6 @@
 import express from 'express';
 import { validationResult } from 'express-validator/check';
 import User from './../models/User';
-import parseErrors from '../utils/parseErrors';
 import { validateEmail, validatePassword } from '../utils/validate';
 import Poll from './../models/Poll';
 import authenticate from '../middlewares/authenticate';
@@ -26,13 +25,7 @@ router.post('/', [
     .then((userRecord) => {
       res.json({ user: userRecord.toAuthJSON() });
     })
-    .catch((err) => {
-      const message = Object.values(parseErrors(err.errors))[0];
-      if (message) {
-        return res.status(400).json({ error: { message } });
-      }
-      return res.status(503).json({ error: { message: 'There has been an error with the database' } });
-    });
+    .catch(error => handleDbError(error, res));
 });
 
 router.get('/polls', authenticate, (req, res) => {
