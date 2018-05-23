@@ -57,22 +57,6 @@ router.put('/:id/:option_id/up', (req, res) => {
     .catch(error => res.json({ message: 'Cannot find this poll' }));
 });
 
-router.put('/:id/:option_id/down', (req, res) => {
-  Poll.findById({ _id: req.params.id }).then((poll) => {
-    poll.options.forEach((option) => {
-      if (option._id.equals(req.params.option_id)) {
-        option.votes -= 1;
-        option.save((err, updatedObject) => {
-          if (err) console.log('There has been an error with decrementing option');
-        });
-      }
-    });
-    poll.save();
-    res.json({ poll });
-  })
-    .catch(error => res.json({ message: 'Cannot find this poll' }));
-});
-
 router.delete('/:id', authenticate, async (req, res) => {
   Poll.findOne({ _id: req.params.id }).then((poll) => {
     if (poll.userId.equals(req.currentUser._id)) {
