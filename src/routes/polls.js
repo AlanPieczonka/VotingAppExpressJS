@@ -57,16 +57,18 @@ router.put('/:id/:option_id/up', (req, res) => {
     .catch(error => res.json({ message: 'Cannot find this poll' }));
 });
 
-router.delete('/:id', authenticate, async (req, res) => {
-  Poll.findOne({ _id: req.params.id }).then((poll) => {
-    if (poll.userId.equals(req.currentUser._id)) {
-      Poll.remove(poll)
-        .then(() => res.json({ message: 'Successfully removed' }))
-        .catch(error => res.json({ errors: 'There was a problem with removing polls' }));
-    } else {
-      return res.json({ errors: `You are not the author of this poll, ${req.currentUser.email}!!!` });
-    }
-  });
+router.delete('/:id', authenticate, (req, res) => {
+  Poll.findOne({ _id: req.params.id })
+    .then((poll) => {
+      if (poll.userId.equals(req.currentUser._id)) {
+        Poll.remove(poll)
+          .then(() => res.json({ success: { message: 'Successfully removed' } }))
+          .catch(error => handleDbError(error, res));
+      } else {
+        return res.json({ error: { message: `You cannot delete other users' polls, ${req.currentUser.email}` } });
+      }
+    })
+    .catch(error => handleDbError(error, res));
 });
 
 export default router;
