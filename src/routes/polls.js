@@ -1,88 +1,81 @@
 import express from 'express';
-import User from './../models/User';
 import Poll from './../models/Poll';
 import authenticate from './../middlewares/authenticate';
+import handleDbError from '../utils/handleDbError';
 
 const router = express.Router();
 
-// TODO: Think about using async/await here
-// POST new poll * ONLY AUTHENTICATED USER *
 router.post('/', authenticate, (req, res) => {
-  console.log(req.body.poll);
   Poll.create({ ...req.body.poll, userId: req.currentUser._id })
     .then(poll => res.json({ poll }))
-    .catch(error => res.json({ message: 'There has been an error with creating the Poll', error}))
+    .catch(error => handleDbError(error, res));
 });
 
-// GET all polls *ANY USER*
 router.get('/', (req, res) => {
   Poll.find()
-    .then(polls => res.json({ polls }))
-    .catch(() => res.json({ errors: 'Cannot find any poll!!!' }));
-});
-
-// GET specific poll *ANY USER*
-router.get('/:id', async (req, res) => {
-  Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
-});
-
-router.put('/:id', authenticate, (req, res) => {
-  Poll.findOne({ _id: req.params.id }).then((poll) => {
-    poll.options.push(req.body.newOption);
-    poll.save((err, poll) => {
-      if (err !== null) {
-        return res.json({ message: 'There has been an error with adding new option', err })
+    .then((polls) => {
+      if (polls.length === 0) {
+        return res.status(401).json({ error: { message: 'Currently there is no polls in our database' } });
       }
-      res.json({ poll });
-    });
-  });
+      return res.json({ polls });
+    })
+    .catch(error => handleDbError(error, res));
 });
 
-// PUT increment number of votes on specific option
-router.put('/:id/:option_id/up', (req, res) => {
-  Poll.findById({ _id: req.params.id }).then((poll) => {
-    poll.options.forEach((option) => {
-      if (option._id.equals(req.params.option_id)) {
-        option.votes += 1;
-        option.save((err, updatedObject) => {
-          if (err) console.log('There has been an error with incrementing option');
-        });
+router.get('/:id', (req, res) => {
+  Poll.find({ _id: req.params.id })
+    .then(poll => res.json(poll))
+    .catch(error => handleDbError(error, res));
+});
+
+router.post('/:id/option', authenticate, (req, res) => {
+  Poll.findOne({ _id: req.params.id })
+    .then((poll) => {
+      poll.options.push(req.body.newOption);
+      poll.save((error, savedPoll) => {
+        if (error !== null) {
+          return handleDbError(error, res);
+        }
+        return res.json({ poll: savedPoll });
+      });
+    });
+});
+
+router.patch('/:id/:option/up', (req, res) => {
+  Poll.findOne({ _id: req.params.id })
+    .then((poll) => {
+      poll.options.forEach((option) => {
+        if (option._id.equals(req.params.option)) {
+          option.votes += 1;
+          option.save((error, option) => {
+            if (error) {
+              return handleDbError(error, res);
+            }
+          });
+        }
+      });
+      poll.save((error, savedPoll) => {
+        if (error !== null) {
+          return handleDbError(error, res);
+        }
+        return res.json({ poll: savedPoll });
+      });
+    })
+    .catch(error => handleDbError(error, res));
+});
+
+router.delete('/:id', authenticate, (req, res) => {
+  Poll.findOne({ _id: req.params.id })
+    .then((poll) => {
+      if (poll.userId.equals(req.currentUser._id)) {
+        Poll.remove(poll)
+          .then(() => res.json({ success: { message: 'Successfully removed' } }))
+          .catch(error => handleDbError(error, res));
+      } else {
+        return res.json({ error: { message: `You cannot delete other users' polls, ${req.currentUser.email}` } });
       }
-    });
-    poll.save();
-    res.json({ poll });
-  })
-    .catch(error => res.json({ message: 'Cannot find this poll' }));
-});
-
-// PUT decrement number of votes on specific option
-router.put('/:id/:option_id/down', (req, res) => {
-  Poll.findById({ _id: req.params.id }).then((poll) => {
-    poll.options.forEach((option) => {
-      if (option._id.equals(req.params.option_id)) {
-        option.votes -= 1;
-        option.save((err, updatedObject) => {
-          if (err) console.log('There has been an error with decrementing option');
-        });
-      }
-    });
-    poll.save();
-    res.json({ poll });
-  })
-    .catch(error => res.json({ message: 'Cannot find this poll' }));
-});
-
-// DELETE poll *ONLY AUTHENTICATED AND AUTHORIZED USER*
-router.delete('/:id', authenticate, async (req, res) => {
-  Poll.findOne({ _id: req.params.id }).then((poll) => {
-    if (poll.userId.equals(req.currentUser._id)) {
-      Poll.remove(poll)
-        .then(() => res.json({ message: 'Successfully removed' }))
-        .catch(error => res.json({ errors: 'There was a problem with removing polls' }));
-    } else {
-      return res.json({ errors: `You are not the author of this poll, ${req.currentUser.email}!!!` });
-    }
-  });
+    })
+    .catch(error => handleDbError(error, res));
 });
 
 export default router;
