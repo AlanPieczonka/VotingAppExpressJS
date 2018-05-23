@@ -4,7 +4,6 @@ import authenticate from '../middlewares/authenticate';
 
 const router = express.Router();
 
-// GET specific current user's polls * ONLY AUTHENTICATED USER *
 router.get('/polls', authenticate, (req, res) => {
   Poll.find({ userId: req.currentUser._id })
     .then(polls => res.json({ polls }))
