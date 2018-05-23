@@ -13,8 +13,13 @@ router.post('/', authenticate, (req, res) => {
 
 router.get('/', (req, res) => {
   Poll.find()
-    .then(polls => res.json({ polls }))
-    .catch(() => res.json({ errors: 'Cannot find any poll!!!' }));
+    .then((polls) => {
+      if (polls.length === 0) {
+        return res.status(401).json({ error: { message: 'Currently there is no polls in our database' } });
+      }
+      return res.json({ polls });
+    })
+    .catch(error => handleDbError(error, res));
 });
 
 router.get('/:id', (req, res) => {
@@ -26,7 +31,7 @@ router.put('/:id', authenticate, (req, res) => {
     poll.options.push(req.body.newOption);
     poll.save((err, poll) => {
       if (err !== null) {
-        return res.json({ message: 'There has been an error with adding new option', err })
+        return res.json({ message: 'There has been an error with adding new option', err });
       }
       res.json({ poll });
     });
