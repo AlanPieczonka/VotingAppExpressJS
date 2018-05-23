@@ -23,8 +23,15 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
-  Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
+  Poll.find({ _id: req.params.id })
+    .then(poll => res.json(poll))
+    .catch(error => handleDbError(error, res));
 });
+
+// router.get('/:id', (req, res) => {
+//   Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
+// });
+
 
 router.put('/:id', authenticate, (req, res) => {
   Poll.findOne({ _id: req.params.id }).then((poll) => {
