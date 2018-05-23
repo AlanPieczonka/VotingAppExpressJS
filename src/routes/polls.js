@@ -28,21 +28,17 @@ router.get('/:id', (req, res) => {
     .catch(error => handleDbError(error, res));
 });
 
-// router.get('/:id', (req, res) => {
-//   Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
-// });
-
-
-router.put('/:id', authenticate, (req, res) => {
-  Poll.findOne({ _id: req.params.id }).then((poll) => {
-    poll.options.push(req.body.newOption);
-    poll.save((err, poll) => {
-      if (err !== null) {
-        return res.json({ message: 'There has been an error with adding new option', err });
-      }
-      res.json({ poll });
+router.post('/:id/option', authenticate, (req, res) => {
+  Poll.findOne({ _id: req.params.id })
+    .then((poll) => {
+      poll.options.push(req.body.newOption);
+      poll.save((error, savedPoll) => {
+        if (error !== null) {
+          return handleDbError(error, res);
+        }
+        return res.json({ poll: savedPoll });
+      });
     });
-  });
 });
 
 router.put('/:id/:option_id/up', (req, res) => {
