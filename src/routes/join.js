@@ -23,7 +23,13 @@ router.post('/', [
     .then((userRecord) => {
       res.json({ user: userRecord.toAuthJSON() });
     })
-    .catch(err => res.status(400).json({ errors: parseErrors(err.errors) }));
+    .catch((err) => {
+      const message = Object.values(parseErrors(err.errors))[0];
+      if (message) {
+        return res.status(400).json({ error: { message } });
+      }
+      return res.status(503).json({ error: { message: 'There has been an error with saving to database' } });
+    });
 });
 
 export default router;
