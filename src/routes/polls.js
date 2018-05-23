@@ -1,5 +1,4 @@
 import express from 'express';
-import User from './../models/User';
 import Poll from './../models/Poll';
 import authenticate from './../middlewares/authenticate';
 
