@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 });
 
 // GET specific poll *ANY USER*
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   Poll.find({ _id: req.params.id }).then(poll => res.json(poll));
 });
 
