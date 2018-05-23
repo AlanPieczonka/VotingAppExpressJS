@@ -41,20 +41,27 @@ router.post('/:id/option', authenticate, (req, res) => {
     });
 });
 
-router.put('/:id/:option_id/up', (req, res) => {
-  Poll.findById({ _id: req.params.id }).then((poll) => {
-    poll.options.forEach((option) => {
-      if (option._id.equals(req.params.option_id)) {
-        option.votes += 1;
-        option.save((err, updatedObject) => {
-          if (err) console.log('There has been an error with incrementing option');
-        });
-      }
-    });
-    poll.save();
-    res.json({ poll });
-  })
-    .catch(error => res.json({ message: 'Cannot find this poll' }));
+router.patch('/:id/:option/up', (req, res) => {
+  Poll.findOne({ _id: req.params.id })
+    .then((poll) => {
+      poll.options.forEach((option) => {
+        if (option._id.equals(req.params.option)) {
+          option.votes += 1;
+          option.save((error, option) => {
+            if (error) {
+              return handleDbError(error, res);
+            }
+          });
+        }
+      });
+      poll.save((error, savedPoll) => {
+        if (error !== null) {
+          return handleDbError(error, res);
+        }
+        return res.json({ poll: savedPoll });
+      });
+    })
+    .catch(error => handleDbError(error, res));
 });
 
 router.delete('/:id', authenticate, (req, res) => {
