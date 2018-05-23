@@ -1,14 +1,14 @@
 import express from 'express';
 import Poll from './../models/Poll';
 import authenticate from './../middlewares/authenticate';
+import handleDbError from '../utils/handleDbError';
 
 const router = express.Router();
 
 router.post('/', authenticate, (req, res) => {
-  console.log(req.body.poll);
   Poll.create({ ...req.body.poll, userId: req.currentUser._id })
     .then(poll => res.json({ poll }))
-    .catch(error => res.json({ message: 'There has been an error with creating the Poll', error}))
+    .catch(error => handleDbError(error, res));
 });
 
 router.get('/', (req, res) => {
