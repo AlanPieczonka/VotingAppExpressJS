@@ -3,7 +3,7 @@ import User from '../models/User';
 
 export default (req, res, next) => {
   const header = req.headers.authorization,
-        postmanTesting = true;
+        postmanTesting = false;
   let token;
   if (postmanTesting) {
     token = header;
