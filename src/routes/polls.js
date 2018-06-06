@@ -22,7 +22,10 @@ router.get('/', (req, res) => {
       }
       return res.json({ polls });
     })
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 router.get('/:id', (req, res) => {
