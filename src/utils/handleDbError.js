@@ -1,9 +1,15 @@
 import parseErrors from '../utils/parseErrors';
 
-export default (err, res) => {
+export default (err) => {
   const message = Object.values(parseErrors(err.errors))[0] || err.message;
   if (message) {
-    return res.status(404).json({ error: { message } });
+    return {
+      message,
+      statusCode: 404,
+    };
   }
-  return res.status(503).json({ error: { message: 'There has been an error with the database' } });
+  return {
+    message: 'There has been an error with the database',
+    statusCode: 503,
+  };
 };

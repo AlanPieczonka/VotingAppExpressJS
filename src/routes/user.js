@@ -23,9 +23,12 @@ router.post('/', [
   user
     .save()
     .then((userRecord) => {
-      res.json({ user: userRecord.toAuthJSON() });
+      return res.json({ user: userRecord.toAuthJSON() });
     })
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 router.get('/polls', authenticate, (req, res) => {
@@ -36,7 +39,10 @@ router.get('/polls', authenticate, (req, res) => {
       }
       return res.json({ polls });
     })
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 export default router;
