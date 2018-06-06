@@ -63,19 +63,24 @@ router.patch('/:id/:option/up', (req, res) => {
           option.votes += 1;
           option.save((error, option) => {
             if (error) {
-              return handleDbError(error, res);
+              const { message, statusCode } = handleDbError(error);
+              return res.status(statusCode).json({ error: { message } });
             }
           });
         }
       });
       poll.save((error, savedPoll) => {
         if (error !== null) {
-          return handleDbError(error, res);
+          const { message, statusCode } = handleDbError(error);
+          return res.status(statusCode).json({ error: { message } });
         }
         return res.json({ poll: savedPoll });
       });
     })
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 router.delete('/:id', authenticate, (req, res) => {
