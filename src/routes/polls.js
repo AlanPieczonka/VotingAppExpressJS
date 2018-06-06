@@ -31,7 +31,10 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   Poll.find({ _id: req.params.id })
     .then(poll => res.json(poll))
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 router.post('/:id/option', authenticate, (req, res) => {
