@@ -18,7 +18,7 @@ router.get('/', (req, res) => {
   Poll.find()
     .then((polls) => {
       if (polls.length === 0) {
-        return res.status(404).json({ error: { message: 'Currently there is no polls in our database' } });
+        return res.status(404).json({ error: { message: 'Currently there are no polls in our database' } });
       }
       return res.json({ polls });
     })
