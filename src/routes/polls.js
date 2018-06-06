@@ -89,12 +89,18 @@ router.delete('/:id', authenticate, (req, res) => {
       if (poll.userId.equals(req.currentUser._id)) {
         Poll.remove(poll)
           .then(() => res.json({ success: { message: 'Successfully removed' } }))
-          .catch(error => handleDbError(error, res));
+          .catch((error) => {
+            const { message, statusCode } = handleDbError(error);
+            return res.status(statusCode).json({ error: { message } });
+          });
       } else {
         return res.json({ error: { message: `You cannot delete other users' polls, ${req.currentUser.email}` } });
       }
     })
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 export default router;
