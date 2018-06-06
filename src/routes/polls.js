@@ -43,10 +43,15 @@ router.post('/:id/option', authenticate, (req, res) => {
       poll.options.push(req.body.newOption);
       poll.save((error, savedPoll) => {
         if (error !== null) {
-          return handleDbError(error, res);
+          const { message, statusCode } = handleDbError(error);
+          return res.status(statusCode).json({ error: { message } });
         }
         return res.json({ poll: savedPoll });
       });
+    })
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
     });
 });
 
