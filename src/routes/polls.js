@@ -8,7 +8,10 @@ const router = express.Router();
 router.post('/', authenticate, (req, res) => {
   Poll.create({ ...req.body.poll, userId: req.currentUser._id })
     .then(poll => res.json({ poll }))
-    .catch(error => handleDbError(error, res));
+    .catch((error) => {
+      const { message, statusCode } = handleDbError(error);
+      return res.status(statusCode).json({ error: { message } });
+    });
 });
 
 router.get('/', (req, res) => {
