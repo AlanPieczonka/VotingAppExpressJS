@@ -2,6 +2,7 @@ import express from 'express';
 import Poll from './../models/Poll';
 import authenticate from './../middlewares/authenticate';
 import handleDbError from '../utils/handleDbError';
+import getIp from '../utils/getIp';
 
 const router = express.Router();
 
@@ -58,23 +59,37 @@ router.post('/:id/option', authenticate, (req, res) => {
 router.patch('/:id/:option/up', (req, res) => {
   Poll.findOne({ _id: req.params.id })
     .then((poll) => {
+      const ipAddress = getIp(req);
+
+      let userAlreadyVoted = false;
       poll.options.forEach((option) => {
-        if (option._id.equals(req.params.option)) {
-          option.votes += 1;
-          option.save((error, option) => {
-            if (error) {
-              const { message, statusCode } = handleDbError(error);
-              return res.status(statusCode).json({ error: { message } });
-            }
+        const optionIncludesUser = option.votes.some(option => option.ipAddress === ipAddress);
+        const isTheRightID = option._id.equals(req.params.option);
+
+        if (isTheRightID && optionIncludesUser) {
+          userAlreadyVoted = true;
+        } else if (isTheRightID && !optionIncludesUser) {
+          option.votes.push({
+            ipAddress,
           });
+          option.save();
+        } else if (!isTheRightID && optionIncludesUser) { // clean code or security???
+          const _id = option.votes.find(vote => vote.ipAddress === ipAddress);
+          option.votes.pull({ _id });
+          option.save();
         }
       });
+
+      if (userAlreadyVoted) {
+        return res.status(401).json({ error: { message: 'You have already voted on this option' } });
+      }
+
       poll.save((error, savedPoll) => {
         if (error !== null) {
           const { message, statusCode } = handleDbError(error);
           return res.status(statusCode).json({ error: { message } });
         }
-        return res.json({ poll: savedPoll });
+        return res.status(200).json({ poll: savedPoll });
       });
     })
     .catch((error) => {
@@ -85,10 +100,10 @@ router.patch('/:id/:option/up', (req, res) => {
 
 router.delete('/:id', authenticate, (req, res) => {
   Poll.findOne({ _id: req.params.id })
-    .then((poll) => {
-      if (poll.userId.equals(req.currentUser._id)) {
-        Poll.remove(poll)
-          .then(() => res.json({ success: { message: 'Successfully removed' } }))
+    .then(({ _id, userId }) => {
+      if (userId.equals(req.currentUser._id)) {
+        Poll.remove({ _id })
+          .then((err, poll) => res.json({ success: { message: 'Successfully removed' } }))
           .catch((error) => {
             const { message, statusCode } = handleDbError(error);
             return res.status(statusCode).json({ error: { message } });

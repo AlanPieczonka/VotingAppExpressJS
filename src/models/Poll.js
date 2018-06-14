@@ -14,12 +14,13 @@ const schema = new mongoose.Schema(
           required: true,
           unique: true,
         },
-        votes: {
-          type: Number,
-          default: 0,
-          min: 0,
-          max: 99,
-        },
+        votes: [
+          {
+            ipAddress: {
+              type: String,
+            },
+          },
+        ],
       },
     ],
     userId: {
