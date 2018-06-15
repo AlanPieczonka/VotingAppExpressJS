@@ -35,7 +35,7 @@ router.get('/polls', authenticate, (req, res) => {
   Poll.find({ userId: req.currentUser._id })
     .then((polls) => {
       if (polls.length === 0) {
-        return res.status(401).json({ error: { message: "Currently you don't have any polls" } });
+        return res.status(404).json({ error: { message: "Currently you don't have any polls" } });
       }
       return res.json({ polls });
     })
